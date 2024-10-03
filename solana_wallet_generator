@@ -1,0 +1,36 @@
+import csv
+import base58
+from solders.keypair import Keypair
+
+csv_file_path = 'solana_wallets.csv'
+
+wallets = 3 #Modify with the number of wallets that you want to create.
+
+def generate_wallets_to_csv(num_wallets, file_path):
+    with open(file_path, 'a', newline='') as file:
+        csv_writer = csv.writer(file)
+        csv_writer.writerow(['Wallet No.', 'Public Key', 'Private Key', 'Solana Scan Link'])
+        for i in range(num_wallets):
+            keypair = Keypair()
+            public_key = str(keypair.pubkey())
+            private_key_bytes = bytes(keypair)
+            private_key = base58.b58encode(private_key_bytes).decode('utf-8')
+            solana_scan_link = f'https://solscan.io/account/{public_key}'
+            csv_writer.writerow([i + 1, public_key, private_key, solana_scan_link])
+
+def extract_public_keys(original_csv_path, new_csv_path):
+    with open(original_csv_path, 'r') as original_file:
+        csv_reader = csv.reader(original_file)
+        next(csv_reader)
+        with open(new_csv_path, 'w', newline='') as new_file:
+            csv_writer = csv.writer(new_file)
+            csv_writer.writerow(['Wallet No.', 'Public Key'])
+            for i, row in enumerate(csv_reader, start=1):
+                wallet_no = i
+                public_key = row[1] 
+                csv_writer.writerow([wallet_no, public_key])
+
+generate_wallets_to_csv(wallets, csv_file_path)
+extract_public_keys('solana_wallets.csv', 'public_keys.csv')
+
+print('Wallets generated, check .csv files.')
